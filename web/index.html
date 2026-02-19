@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Scene RAG</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Multi-Scene RAG 控制台</h1>
+      <p>聊天问答 / 设置 / 场景管理</p>
+    </header>
+
+    <div class="app-layout">
+      <aside class="sidebar">
+        <nav class="tabs">
+          <button class="tab-btn active" data-tab="chat">聊天</button>
+          <button class="tab-btn" data-tab="settings">设置</button>
+          <button class="tab-btn" data-tab="scenes">场景管理</button>
+        </nav>
+      </aside>
+
+      <section class="content-area">
+        <section id="rebuildTaskCard" class="task-card hidden">
+          <div class="task-card-header">
+            <strong>索引重建任务</strong>
+            <span id="taskStatusBadge" class="task-badge">queued</span>
+          </div>
+          <div class="task-meta">
+            <span>Task ID: <code id="taskIdText">-</code></span>
+            <span>Scene: <code id="taskSceneText">-</code></span>
+          </div>
+          <div class="task-progress-wrap">
+            <div id="taskProgressBar" class="task-progress-bar"></div>
+          </div>
+          <p id="taskMessageText" class="task-message">等待任务...</p>
+        </section>
+
+        <main>
+          <section class="tab-panel active" id="tab-chat">
+            <div id="chatMessages" class="chat-messages"></div>
+            <div class="chat-input-row">
+              <input id="chatInput" type="text" placeholder="请输入问题..." />
+              <button id="chatSendBtn">发送</button>
+            </div>
+          </section>
+
+          <section class="tab-panel" id="tab-settings">
+            <div class="card">
+              <label>当前 API Key（掩码）</label>
+              <input id="maskedApiKey" type="text" disabled />
+            </div>
+            <div class="card">
+              <label>新的 API_KEY（留空则不变）</label>
+              <input id="apiKeyInput" type="password" placeholder="sk-..." />
+            </div>
+            <div class="card">
+              <label>LLM 厂商（llm_vendor）</label>
+              <select id="llmVendorInput">
+                <option value="dashscope">DashScope</option>
+                <option value="openai">OpenAI</option>
+                <option value="claude">Claude</option>
+                <option value="gemini">Gemini</option>
+                <option value="glm">GLM</option>
+                <option value="kimi">Kimi</option>
+                <option value="custom">自定义</option>
+              </select>
+            </div>
+            <div class="card">
+              <label>Base URL</label>
+              <input id="baseUrlInput" type="text" />
+            </div>
+            <div class="card">
+              <label>模型名称（model_name）</label>
+              <input id="modelNameInput" type="text" placeholder="例如: qwen-plus" />
+            </div>
+            <div class="card">
+              <label>Embedding Provider</label>
+              <select id="embeddingProviderInput"></select>
+              <div id="embeddingProviderCustomRow" class="editable-custom-row hidden">
+                <input
+                  id="embeddingProviderCustomInput"
+                  type="text"
+                  placeholder="请输入自定义 provider（如未来新增供应商）"
+                />
+                <button id="embeddingProviderBackBtn" type="button" class="switch-back-btn">返回预设</button>
+              </div>
+            </div>
+            <div class="card">
+              <label>Embedding 模型名称（embedding_model）</label>
+              <select id="embeddingModelInput"></select>
+              <div id="embeddingModelCustomRow" class="editable-custom-row hidden">
+                <input
+                  id="embeddingModelCustomInput"
+                  type="text"
+                  placeholder="请输入自定义 embedding 模型名（如模型 ID 或本地路径）"
+                />
+                <button id="embeddingModelBackBtn" type="button" class="switch-back-btn">返回预设</button>
+              </div>
+            </div>
+            <div class="card">
+              <label>Embedding 模型来源（embedding_source）</label>
+              <select id="embeddingSourceInput"></select>
+              <div id="embeddingSourceCustomRow" class="editable-custom-row hidden">
+                <input
+                  id="embeddingSourceCustomInput"
+                  type="text"
+                  placeholder="请输入自定义 source"
+                />
+                <button id="embeddingSourceBackBtn" type="button" class="switch-back-btn">返回预设</button>
+              </div>
+            </div>
+            <div class="card">
+              <label>Embedding 运行设备（embedding_device）</label>
+              <select id="embeddingDeviceInput"></select>
+              <div id="embeddingDeviceCustomRow" class="editable-custom-row hidden">
+                <input
+                  id="embeddingDeviceCustomInput"
+                  type="text"
+                  placeholder="请输入自定义 device"
+                />
+                <button id="embeddingDeviceBackBtn" type="button" class="switch-back-btn">返回预设</button>
+              </div>
+            </div>
+            <div id="embeddingModelCheckCard" class="card hidden">
+              <label>嵌入式模型状态</label>
+              <div class="embedding-check-row">
+                <button id="checkEmbeddingModelBtn" type="button" class="secondary-btn">检查模型状态</button>
+              </div>
+              <p id="embeddingModelStatusText" class="embedding-status-text">未检查</p>
+            </div>
+            <p class="hint">
+              提示：修改 embedding 相关配置后，建议执行一次“重建索引（全量）”。
+            </p>
+            <button id="saveSettingsBtn">保存设置</button>
+          </section>
+
+          <section class="tab-panel" id="tab-scenes">
+            <div class="scene-actions">
+              <button id="addSceneBtn">新增场景</button>
+              <button id="saveScenesBtn">保存场景</button>
+              <button id="rebuildAllBtn">重建索引（全量）</button>
+            </div>
+            <table class="scene-table">
+              <thead>
+                <tr>
+                  <th>scene_key</th>
+                  <th>name</th>
+                  <th>keywords（逗号分隔）</th>
+                  <th>path</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="sceneTableBody"></tbody>
+            </table>
+          </section>
+        </main>
+
+        <footer>
+          <p id="statusText">Ready.</p>
+        </footer>
+      </section>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

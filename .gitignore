@@ -6,3 +6,15 @@ __pycache__/
 .specstory/
 .cursorindexingignore
 
+app_config.json
+
+# Build artifacts
+build/
+dist/
+dist_installer/
+*.spec
+embedding/
+
+storage/**/*
+
+data/**/*

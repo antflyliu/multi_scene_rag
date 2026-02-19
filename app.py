@@ -11,7 +11,7 @@
 from rag_engine import MultiSceneRAG
 
 if __name__ == "__main__":
-    rag = MultiSceneRAG()
+    rag = MultiSceneRAG(runtime_mode="cli")
 
     while True:
         query = input("\n请输入您的问题（输入 'quit' 退出）: ")

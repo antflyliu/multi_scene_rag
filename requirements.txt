@@ -3,10 +3,22 @@
 llama-index-core>=0.12.52
 llama-index-vector-stores-chroma>=0.5.5
 llama-index-llms-dashscope>=0.5.2
+llama-index-llms-openai>=0.5.6
 llama-index-embeddings-dashscope>=0.4.1
+llama-index-embeddings-openai>=0.5.1
+llama-index-embeddings-huggingface>=0.5.1
+huggingface_hub>=0.24.0
 
 # 向量数据库
 chromadb>=0.5.0
 
 # LLM 调用（DashScope 兼容 OpenAI 接口）
 openai>=2.7.1
+
+# API 服务（Phase 1）
+fastapi>=0.115.0
+uvicorn>=0.30.0
+
+# 桌面端（Phase 4）
+pywebview>=5.1
+modelscope>=1.27.1
