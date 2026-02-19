@@ -15,6 +15,9 @@ dist_installer/
 *.spec
 embedding/
 
+storage/
 storage/**/*
 
-data/**/*
+installer/
+build/
+
